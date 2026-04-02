@@ -120,7 +120,7 @@
     </div>
 
     <div class="timer-container">
-        <div style="font-size: 0.8rem; color: #888;">TARGET: 5-APRIL-2026 | 14:00:00</div>
+        <div style="font-size: 0.8rem; color: #888;">TARGET Time</div>
         <div id="timer">00D, 00:00:00</div>
     </div>
 
@@ -137,9 +137,9 @@
 </audio>
 
 <script>
-    const CORRECT_ENTRY_PASS = "123456"; 
-    const CORRECT_STOP_PASS = "654321";  
-    const TARGET_DATE = new Date("April 3, 2026 14:00:00").getTime();
+    const CORRECT_ENTRY_PASS = "142026"; 
+    const CORRECT_STOP_PASS = "123690";  
+    const TARGET_DATE = new Date("April 5, 2026 14:00:00").getTime();
     
     let timerInterval;
     let isStopped = false;
@@ -172,7 +172,7 @@
             const dist = TARGET_DATE - now;
 
             if (dist < 0) {
-                document.getElementById("timer").innerHTML = "00D, 00:00:00";
+                document.getElementById("timer").innerHTML = "POSTED(DONED)";
                 return;
             }
 
@@ -181,7 +181,7 @@
             const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
             const s = Math.floor((dist % (1000 * 60)) / 1000).toString().padStart(2, '0');
 
-            document.getElementById("timer").innerHTML = `${d}D, ${h}:${m}:${s}`;
+            document.getElementById("timer").innerHTML = `${d}ရက်, ${h}:${m}:${s}`;
         }, 1000);
     }
 
