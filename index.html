@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Fit AI Countdown</title>
+    <style>
+        :root {
+            --primary-green: #00ff41;
+            --error-red: #ff0000;
+            --bg-dark: #0a0a0a;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-dark);
+            color: white; overflow-x: hidden;
+            transition: background-color 0.3s;
+        }
+
+        .bg-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url(
+            'bg.jpg') no-repeat center center fixed;
+            background-size: cover; filter: brightness(0.3); z-index: -1;
+        }
+
+        /* Login Box UI */
+        #login-page {
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; padding: 0 20px;
+            
+        }
+
+        .glass-box {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            padding: 35px 25px; border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+            width: 350px; max-width: 95%; box-sizing: border-box;
+        }
+
+        h2 { color: var(--primary-green); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; }
+
+        input {
+            width: 100%; padding: 14px; margin-bottom: 20px;
+            border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.7); color: white;
+            text-align: center; font-size: 1rem; box-sizing: border-box;
+        }
+
+        .btn-enter {
+            background: #ff6b6b; color: white; border: none;
+            padding: 12px 50px; border-radius: 8px;
+            font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+
+        /* Content UI */
+        #main-content { display: none; padding: 20px; text-align: center; }
+
+        .gallery {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px; margin-bottom: 30px;
+        }
+        .gallery img, .gallery video { width: 100%; border-radius: 8px; border: 1px solid #333; }
+
+        /* Timer UI */
+        .timer-container {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--primary-green);
+            padding: 20px; border-radius: 12px;
+            display: inline-block; margin: 20px 0;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+
+        #timer {
+            font-size: 2.2rem; color: var(--primary-green);
+            font-family: 'Courier New', monospace; font-weight: bold;
+        }
+
+        /* Alarm Red Flash Effect */
+        @keyframes alarmFlash {
+            0% { background-color: transparent; }
+            50% { background-color: rgba(255, 0, 0, 0.7); }
+            100% { background-color: transparent; }
+        }
+
+        .alarm-active .bg-overlay { display: none; }
+        .alarm-active {
+            animation: alarmFlash 0.4s infinite;
+            background-color: var(--error-red);
+        }
+
+        .stop-section { margin-top: 40px; padding-bottom: 100px; }
+    </style>
+</head>
+<body>
+
+<div class="bg-overlay"></div>
+
+<div id="login-page">
+    <div class="glass-box">
+        <h2>Enter Password</h2>
+        <input type="password" id="entryPass" placeholder="Enter 6-Digit " maxlength="6">
+        <button class="btn-enter" onclick="checkEntryPass()">Enter</button>
+    </div>
+</div>
+
+<div id="main-content">
+    <div class="gallery">
+          <img src="a1.jpg"><img src="a2.jpg">
+        <img src="a3.jpg"><img src="a4.jpg">
+        <img src="a5.jpg"><img src="a6.jpg">
+        <img src="a7.jpg">
+
+    <video controls><source src="video1.mp4"></video>
+
+    </div>
+
+    <div class="timer-container">
+        <div style="font-size: 0.8rem; color: #888;">TARGET: 5-APRIL-2026 | 14:00:00</div>
+        <div id="timer">00D, 00:00:00</div>
+    </div>
+
+    <div class="stop-section">
+        <p>To Stop Timer, Enter Code:</p>
+        <input type="password" id="stopPass" placeholder="Stop Code" style="width: 200px;">
+        <br>
+        <button onclick="stopTimer()" style="background: #333; color: #fff; border: none; padding: 10px 30px; border-radius: 5px; cursor: pointer;">Stop Timer</button>
+    </div>
+</div>
+
+<audio id="alarmSound" preload="auto" loop>
+    <source src="alarm.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+    const CORRECT_ENTRY_PASS = "123456"; 
+    const CORRECT_STOP_PASS = "654321";  
+    const TARGET_DATE = new Date("April 3, 2026 14:00:00").getTime();
+    
+    let timerInterval;
+    let isStopped = false;
+    let alarmTimeout; // Alarm ပြန်ပိတ်ဖို့ timeout ကို သိမ်းမယ့် variable
+
+    function checkEntryPass() {
+        const audio = document.getElementById('alarmSound');
+        const entryVal = document.getElementById('entryPass').value;
+
+        // Browser audio permission unlock
+        audio.play().then(() => {
+            audio.pause();
+            audio.currentTime = 0;
+        }).catch(e => console.log("Audio ready"));
+
+        if (entryVal === CORRECT_ENTRY_PASS) {
+            document.getElementById('login-page').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            startCountdown();
+        } else {
+            // Login မှားလျှင် alarm မမြည်ဘဲ စာပဲပြပါမည်
+            alert("စကားဝှက် မှားယွင်းနေပါသည်။");
+        }
+    }
+
+    function startCountdown() {
+        timerInterval = setInterval(() => {
+            if (isStopped) return;
+            const now = new Date().getTime();
+            const dist = TARGET_DATE - now;
+
+            if (dist < 0) {
+                document.getElementById("timer").innerHTML = "00D, 00:00:00";
+                return;
+            }
+
+            const d = Math.floor(dist / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+            const h = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+            const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+            const s = Math.floor((dist % (1000 * 60)) / 1000).toString().padStart(2, '0');
+
+            document.getElementById("timer").innerHTML = `${d}D, ${h}:${m}:${s}`;
+        }, 1000);
+    }
+
+    // Alarm နှင့် မီးနီ Flash ကို လုံးဝ ပြန်ပိတ်ပေးမည့် function
+    function turnOffAlarm() {
+        const alarm = document.getElementById('alarmSound');
+        const body = document.body;
+        body.classList.remove('alarm-active');
+        alarm.pause();
+        alarm.currentTime = 0;
+    }
+
+    function stopTimer() {
+        const input = document.getElementById('stopPass').value;
+        const alarm = document.getElementById('alarmSound');
+        const body = document.body;
+
+        // User က Stop Timer button ကို ထပ်ခါတလဲလဲ နှိပ်မိလျှင်
+        // ယခင်ရှိနေသော ၆ စက္ကန့် timeout ကို အရင်ဖျက်ပါမည်။
+        if (alarmTimeout) {
+            clearTimeout(alarmTimeout);
+        }
+
+        if (input === CORRECT_STOP_PASS) {
+            isStopped = true;
+            turnOffAlarm(); // Alarm ပြန်ပိတ်သည်
+            alert("Timer ကို ရပ်တန့်လိုက်ပါပြီ။");
+        } else {
+            // Stop password မှားလျှင် Alarm မြည်ပြီး မီးနီလင်းမည်
+            body.classList.add('alarm-active');
+            alarm.play();
+            
+            // ၆ စက္ကန့် ကြာပြီးနောက် Alarm လုံးဝ ပြန်ပိတ်ရန် သတ်မှတ်သည်
+            alarmTimeout = setTimeout(() => {
+                turnOffAlarm(); // ဒီနေရာမှာ ၆ စက္ကန့်ပြည့်ရင် မီးနီရော အသံရော ပိတ်သွားပါပြီ
+                alarmTimeout = null; // timeout ကို clear လုပ်သည်
+            }, 8000); // 6000 milliseconds = 6 seconds
+
+            alert("စကားဝှက် မှားယွင်းနေပါသည်။Postကို ပယ်ဖျက်၍မရပါ။");
+        }
+    }
+</script>
+
+</body>
+</html>
